@@ -1,0 +1,3 @@
+The scrolling of messages when the keyboard is open seems to be fixed. However, now the Entry and Button at the bottom that are here to enable writing and sending of messages are overlapped by the keyboard.
+Take a screenshot now - it's visible well.
+The end result should be that when keyboard is open, the part where the user writes a message and wants to send it (Entry and Button) should be visible. But the CollectionView with chat messages shouldn't move outside of the bounds of the screen.
