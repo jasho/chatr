@@ -17,4 +17,9 @@
         ContentTemplate="{DataTemplate pages:SettingsPage}"
         Route="settings" />
 
+    <ShellContent
+        Title="Chat"
+        ContentTemplate="{DataTemplate pages:ChatPage}"
+        Route="chat" />
+
 </Shell>

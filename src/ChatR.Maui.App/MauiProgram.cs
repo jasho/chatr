@@ -56,12 +56,14 @@ public static class MauiProgram
     {
         services.AddTransient<Pages.MainPage>();
         services.AddTransient<Pages.SettingsPage>();
+        services.AddTransient<Pages.ChatPage>();
     }
 
     private static void ConfigureViewModels(IServiceCollection services)
     {
         services.AddTransient<ViewModels.MainPageViewModel>();
         services.AddTransient<ViewModels.SettingsPageViewModel>();
+        services.AddTransient<ViewModels.ChatPageViewModel>();
     }
 
     private static void ConfigureServices(IServiceCollection services)
