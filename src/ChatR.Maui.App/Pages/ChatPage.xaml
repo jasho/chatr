@@ -9,6 +9,7 @@
     <Grid RowDefinitions="*,Auto">
 
         <CollectionView
+            x:Name="MessagesCollectionView"
             Grid.Row="0"
             ItemsSource="{Binding Messages}">
             <CollectionView.ItemTemplate>
