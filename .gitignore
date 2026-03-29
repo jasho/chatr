@@ -416,3 +416,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Local development appsettings
+src/ChatR.Maui.App/Configuration/appsettings.Development.json
