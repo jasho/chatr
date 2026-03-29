@@ -1,0 +1,1 @@
+Connect maui-devflow - include what's necessary in the project. Get the app running on the connected Android device and use maui_screenshot tool to create a screenshot to prove that it is properly connected.
