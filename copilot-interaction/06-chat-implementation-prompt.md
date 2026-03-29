@@ -1,0 +1,4 @@
+Alright, let's move on to the implementation. Implement basic chat functionality to the Chat page and implement the SignalR part in the ChatR.Server.App
+Connect the app to the server. Set up dev tunnel for being able to run the server locally and connect to it from an Android device. Update the appsettings.development.json to keep the settings for local development.
+Don't worry much about the UI now - just add a basic functionality - writing a text message, sending it and displaying - so that the app can as multiple instances and when 1 instance sends a message it appears also in the other instance.
+Set the Chat page as the 1st one to show up when the app is launched.
