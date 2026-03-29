@@ -1,0 +1,1 @@
+Add Settings page. Make sure that there is a ViewModel for it, that the VM gets constructor injected, that the page is registered in RoutingService, that the ViewModel and Page are registerd in DI container - so that it works properly.
