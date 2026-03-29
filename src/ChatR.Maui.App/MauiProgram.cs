@@ -1,9 +1,3 @@
-using System.Reflection;
-using ChatR.Maui.App.Infrastructure.Navigation;
-using CommunityToolkit.Maui;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-
 namespace ChatR.Maui.App;
 
 public static class MauiProgram
@@ -54,16 +48,16 @@ public static class MauiProgram
 
     private static void ConfigureViews(IServiceCollection services)
     {
-        services.AddTransient<Pages.MainPage>();
-        services.AddTransient<Pages.SettingsPage>();
-        services.AddTransient<Pages.ChatPage>();
+        services.AddTransient<MainPage>();
+        services.AddTransient<SettingsPage>();
+        services.AddTransient<ChatPage>();
     }
 
     private static void ConfigureViewModels(IServiceCollection services)
     {
-        services.AddTransient<ViewModels.MainPageViewModel>();
-        services.AddTransient<ViewModels.SettingsPageViewModel>();
-        services.AddTransient<ViewModels.ChatPageViewModel>();
+        services.AddTransient<MainPageViewModel>();
+        services.AddTransient<SettingsPageViewModel>();
+        services.AddTransient<ChatPageViewModel>();
     }
 
     private static void ConfigureServices(IServiceCollection services)

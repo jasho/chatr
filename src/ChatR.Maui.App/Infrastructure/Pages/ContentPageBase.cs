@@ -1,5 +1,3 @@
-using ChatR.Maui.App.Infrastructure.ViewModels;
-
 namespace ChatR.Maui.App.Infrastructure.Pages;
 
 public abstract class ContentPageBase<TViewModel> : ContentPage

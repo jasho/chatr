@@ -1,5 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-
 namespace ChatR.Maui.App.Infrastructure.ViewModels;
 
 public abstract partial class ViewModelBase : ObservableObject

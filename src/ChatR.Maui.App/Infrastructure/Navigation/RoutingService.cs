@@ -1,5 +1,3 @@
-using ChatR.Maui.App.Pages;
-
 namespace ChatR.Maui.App.Infrastructure.Navigation;
 
 public class RoutingService : IRoutingService

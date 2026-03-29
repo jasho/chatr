@@ -14,8 +14,6 @@ Follow these steps **in order** when adding a new page. Replace `<PageName>` wit
 Create `src/ChatR.Maui.App/ViewModels/<PageName>ViewModel.cs`:
 
 ```csharp
-using ChatR.Maui.App.Infrastructure.ViewModels;
-
 namespace ChatR.Maui.App.ViewModels;
 
 public partial class <PageName>ViewModel : ViewModelBase
@@ -32,9 +30,6 @@ public partial class <PageName>ViewModel : ViewModelBase
 Create `src/ChatR.Maui.App/Pages/<PageName>.xaml.cs`:
 
 ```csharp
-using ChatR.Maui.App.Infrastructure.Pages;
-using ChatR.Maui.App.ViewModels;
-
 namespace ChatR.Maui.App.Pages;
 
 public partial class <PageName> : ContentPageBase<<PageName>ViewModel>
@@ -54,13 +49,11 @@ Create `src/ChatR.Maui.App/Pages/<PageName>.xaml`:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
-<inf:ContentPageBase
-    x:TypeArguments="vm:<PageName>ViewModel"
+<ContentPageBase
+    x:TypeArguments="<PageName>ViewModel"
     x:Class="ChatR.Maui.App.Pages.<PageName>"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns="http://schemas.microsoft.com/dotnet/maui/global"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:inf="clr-namespace:ChatR.Maui.App.Infrastructure.Pages"
-    xmlns:vm="clr-namespace:ChatR.Maui.App.ViewModels"
     Title="<PageName>">
 
     <VerticalStackLayout
@@ -73,7 +66,7 @@ Create `src/ChatR.Maui.App/Pages/<PageName>.xaml`:
             FontSize="24" />
     </VerticalStackLayout>
 
-</inf:ContentPageBase>
+</ContentPageBase>
 ```
 
 > **CRITICAL:** `x:Class` must be `ChatR.Maui.App.Pages.<PageName>` — matching the code-behind's namespace exactly. Do NOT use the root namespace `ChatR.Maui.App.<PageName>` or the XAML source generator will produce a broken parameterless constructor call.
@@ -84,15 +77,14 @@ Create `src/ChatR.Maui.App/Pages/<PageName>.xaml`:
 
 Edit `src/ChatR.Maui.App/Infrastructure/Navigation/RoutingService.cs`:
 
-1. Add `using ChatR.Maui.App.Pages;` at the top (required — type resolution from the `Infrastructure.Navigation` namespace will fail without it).
-2. Add a route constant: `public const string <PageName>Route = "//<routename>";`
-3. Add a `RouteModel` entry to the `routes` collection: `new(<PageName>Route, typeof(<PageName>))`
+1. Add a route constant: `public const string <PageName>Route = "//<routename>";`
+2. Add a `RouteModel` entry to the `routes` collection: `new(<PageName>Route, typeof(<PageName>))`
 
-Example after adding a `ChatPage` with route `//chat`:
+> **Note:** No `using` statement is needed — all project namespaces are globally imported via `GlobalUsings.cs`.
+
+Example after adding a `ProfilePage` with route `//profile`:
 
 ```csharp
-using ChatR.Maui.App.Pages;
-
 namespace ChatR.Maui.App.Infrastructure.Navigation;
 
 public class RoutingService : IRoutingService
@@ -100,12 +92,14 @@ public class RoutingService : IRoutingService
     public const string MainPageRoute = "//main";
     public const string SettingsPageRoute = "//settings";
     public const string ChatPageRoute = "//chat";
+    public const string ProfilePageRoute = "//profile";
 
     private static readonly IEnumerable<RouteModel> routes =
     [
         new(MainPageRoute, typeof(MainPage)),
         new(SettingsPageRoute, typeof(SettingsPage)),
-        new(ChatPageRoute, typeof(ChatPage))
+        new(ChatPageRoute, typeof(ChatPage)),
+        new(ProfilePageRoute, typeof(ProfilePage))
     ];
 
     public IEnumerable<RouteModel> Routes => routes;
@@ -118,28 +112,23 @@ public class RoutingService : IRoutingService
 
 Edit `src/ChatR.Maui.App/MauiProgram.cs`:
 
-- In `ConfigureViews`: add `services.AddTransient<Pages.<PageName>>();`
-- In `ConfigureViewModels`: add `services.AddTransient<ViewModels.<PageName>ViewModel>();`
-
-Use the qualified names `Pages.` and `ViewModels.` — bare names may not resolve correctly.
+- In `ConfigureViews`: add `services.AddTransient<<PageName>>();`
+- In `ConfigureViewModels`: add `services.AddTransient<<PageName>ViewModel>();`
 
 ---
 
 ## Step 6 — Add to AppShell
 
-Edit `src/ChatR.Maui.App/AppShell.xaml`:
-
-1. Ensure `xmlns:pages="clr-namespace:ChatR.Maui.App.Pages"` is declared on the `<Shell>` element.
-2. Add a `<ShellContent>` entry:
+Edit `src/ChatR.Maui.App/AppShell.xaml`, add a `<ShellContent>` entry:
 
 ```xml
 <ShellContent
     Title="<PageName>"
-    ContentTemplate="{DataTemplate pages:<PageName>}"
+    ContentTemplate="{DataTemplate <PageName>}"
     Route="<routename>" />
 ```
 
-> **Note:** The `Route` value here is just the slug (e.g. `chat`), not the full absolute path (e.g. `//chat`). The `//` prefix is only used in `RoutingService` constants and programmatic navigation.
+> **Note:** The `Route` value is just the slug (e.g. `profile`), not the full path (e.g. `//profile`). The `//` prefix is only used in `RoutingService` constants and programmatic navigation. No `xmlns:pages` prefix is needed — types are resolved via the global XAML namespace.
 
 ---
 
