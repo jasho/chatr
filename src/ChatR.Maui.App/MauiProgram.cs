@@ -54,12 +54,14 @@ public static class MauiProgram
 
     private static void ConfigureViews(IServiceCollection services)
     {
-        services.AddTransient<MainPage>();
+        services.AddTransient<Pages.MainPage>();
+        services.AddTransient<Pages.SettingsPage>();
     }
 
     private static void ConfigureViewModels(IServiceCollection services)
     {
         services.AddTransient<ViewModels.MainPageViewModel>();
+        services.AddTransient<ViewModels.SettingsPageViewModel>();
     }
 
     private static void ConfigureServices(IServiceCollection services)
