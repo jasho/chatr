@@ -1,0 +1,1 @@
+Take a screenshot of the app currently running on Android. You can see that the keyboard is open and the chat is scrolled out of the bounds of the page - there are 8 messsages with texts 1, 2, 3, 4, 5, 6, 7, 8 respectively. But currently only the messages starting from msessage 5 are visible. Look at the screenshot and fix it accordingly.
