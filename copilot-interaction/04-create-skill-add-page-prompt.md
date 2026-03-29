@@ -1,0 +1,1 @@
+Look at the actions that you needed to add a new page and create a skill to be able to repeat these actions easily. Save the skill to the repository so that it can be shared and reused.
