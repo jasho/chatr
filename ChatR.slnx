@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ChatR.Common/ChatR.Common.csproj" />
+  <Project Path="ChatR.Maui.App/ChatR.Maui.App.csproj" />
+  <Project Path="ChatR.Server.App/ChatR.Server.App.csproj" />
+</Solution>
