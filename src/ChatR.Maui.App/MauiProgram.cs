@@ -17,7 +17,7 @@ public static class MauiProgram
         ConfigureAppSettings(builder);
         ConfigureViews(builder.Services);
         ConfigureViewModels(builder.Services);
-        ConfigureServices(builder.Services);
+        ConfigureServices(builder.Services, builder.Configuration);
 
 #if DEBUG
         builder.Logging.AddDebug();
@@ -60,9 +60,12 @@ public static class MauiProgram
         services.AddTransient<ChatPageViewModel>();
     }
 
-    private static void ConfigureServices(IServiceCollection services)
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IRoutingService, RoutingService>();
+        services.Configure<AppSettings>(options =>
+            configuration.GetSection("AppSettings").Bind(options));
+        services.AddSingleton<IChatService, ChatService>();
     }
 
     private static void RegisterRoutes(MauiApp app)

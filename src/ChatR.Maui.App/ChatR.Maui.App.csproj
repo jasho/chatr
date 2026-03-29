@@ -68,6 +68,7 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="14.0.1" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.4" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
@@ -77,6 +78,10 @@
 	<ItemGroup>
 		<EmbeddedResource Include="Configuration\appsettings.json" />
 		<EmbeddedResource Include="Configuration\appsettings.Development.json" Condition="Exists('Configuration\appsettings.Development.json')" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ChatR.Common\ChatR.Common.csproj" />
 	</ItemGroup>
 
 </Project>

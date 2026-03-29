@@ -6,6 +6,11 @@
     Title="ChatR">
 
     <ShellContent
+        Title="Chat"
+        ContentTemplate="{DataTemplate ChatPage}"
+        Route="chat" />
+
+    <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate MainPage}"
         Route="main" />
@@ -14,10 +19,5 @@
         Title="Settings"
         ContentTemplate="{DataTemplate SettingsPage}"
         Route="settings" />
-
-    <ShellContent
-        Title="Chat"
-        ContentTemplate="{DataTemplate ChatPage}"
-        Route="chat" />
 
 </Shell>

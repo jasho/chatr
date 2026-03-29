@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls;
 
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "ChatR.Common")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "ChatR.Maui.App")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "ChatR.Maui.App.Pages")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "ChatR.Maui.App.ViewModels")]

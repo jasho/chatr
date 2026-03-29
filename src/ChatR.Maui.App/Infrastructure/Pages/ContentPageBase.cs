@@ -15,4 +15,10 @@ public abstract class ContentPageBase<TViewModel> : ContentPage
         base.OnAppearing();
         await ViewModel.OnAppearingAsync();
     }
+
+    protected override async void OnDisappearing()
+    {
+        base.OnDisappearing();
+        await ViewModel.OnDisappearingAsync();
+    }
 }

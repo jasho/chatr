@@ -6,14 +6,41 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="Chat">
 
-    <VerticalStackLayout
-        Padding="30"
-        Spacing="16"
-        VerticalOptions="Center">
-        <Label
-            Text="Chat"
-            HorizontalOptions="Center"
-            FontSize="24" />
-    </VerticalStackLayout>
+    <Grid RowDefinitions="*,Auto">
+
+        <CollectionView
+            Grid.Row="0"
+            ItemsSource="{Binding Messages}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="ChatMessage">
+                    <VerticalStackLayout Padding="12,6">
+                        <Label
+                            Text="{Binding Sender}"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            TextColor="{AppThemeBinding Light=#555, Dark=#aaa}" />
+                        <Label Text="{Binding Text}" FontSize="16" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Grid
+            Grid.Row="1"
+            ColumnDefinitions="*,Auto"
+            Padding="8"
+            ColumnSpacing="8">
+            <Entry
+                Grid.Column="0"
+                Placeholder="Type a message..."
+                Text="{Binding MessageText}"
+                ReturnCommand="{Binding SendMessageCommand}" />
+            <Button
+                Grid.Column="1"
+                Text="Send"
+                Command="{Binding SendMessageCommand}" />
+        </Grid>
+
+    </Grid>
 
 </ContentPageBase>

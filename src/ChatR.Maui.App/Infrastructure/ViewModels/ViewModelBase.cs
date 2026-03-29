@@ -16,6 +16,9 @@ public abstract partial class ViewModelBase : ObservableObject
         }
     }
 
+    public virtual Task OnDisappearingAsync()
+        => Task.CompletedTask;
+
     protected virtual Task LoadDataAsync()
         => Task.CompletedTask;
 }
