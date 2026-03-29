@@ -21,6 +21,7 @@ public static class MauiProgram
 
 #if DEBUG
         builder.Logging.AddDebug();
+        builder.AddMauiDevFlowAgent();
 #endif
 
         var app = builder.Build();
