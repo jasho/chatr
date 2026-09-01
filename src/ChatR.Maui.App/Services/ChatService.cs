@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.Options;
 
 namespace ChatR.Maui.App.Services;
@@ -12,7 +13,8 @@ public class ChatService : IChatService
 
     public ChatService(IOptions<AppSettings> options)
     {
-        _hubUrl = options.Value.ServerUrl.TrimEnd('/') + ChatHubConstants.HubPath;
+        var serverUrl = options.Value.ServerUrl.TrimEnd('/');
+        _hubUrl = $"{serverUrl}{ChatHubConstants.HubPath}";
     }
 
     public async Task ConnectAsync()
@@ -21,7 +23,11 @@ public class ChatService : IChatService
             return;
 
         _connection = new HubConnectionBuilder()
-            .WithUrl(_hubUrl)
+            .WithUrl(_hubUrl, options =>
+            {
+                options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
+                options.SkipNegotiation = false;
+            })
             .WithAutomaticReconnect()
             .Build();
 

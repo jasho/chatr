@@ -1,3 +1,7 @@
+#if DEBUG
+using Microsoft.Maui.DevFlow.Agent;
+#endif
+
 namespace ChatR.Maui.App;
 
 public static class MauiProgram
@@ -21,7 +25,10 @@ public static class MauiProgram
 
 #if DEBUG
         builder.Logging.AddDebug();
-        builder.AddMauiDevFlowAgent();
+        builder.AddMauiDevFlowAgent(configuration =>
+        {
+            configuration.EnableProfiler = false;
+        });
 #endif
 
         var app = builder.Build();

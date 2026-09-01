@@ -12,7 +12,3 @@ global using CommunityToolkit.Mvvm.ComponentModel;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.Logging;
 global using System.Reflection;
-
-#if DEBUG
-global using MauiDevFlow.Agent;
-#endif
