@@ -15,7 +15,32 @@ public partial class AiChatPageViewModel(IAiChatService aiChatService)
     [ObservableProperty]
     public partial string MessageText { get; set; } = string.Empty;
 
-    public bool HasApiKey => aiChatService.HasApiKey;
+    [ObservableProperty]
+    public partial AiChatProviderOption? SelectedProvider { get; set; }
+
+    public IReadOnlyList<AiChatProviderOption> Providers => aiChatService.AvailableProviders;
+
+    public bool IsAvailable => aiChatService.IsAvailable;
+    public string UnavailableReason => aiChatService.UnavailableReason;
+
+    protected override Task LoadDataAsync()
+    {
+        SelectedProvider = Providers.FirstOrDefault(p => p.Key == aiChatService.Provider) ?? Providers.FirstOrDefault();
+        return Task.CompletedTask;
+    }
+
+    partial void OnSelectedProviderChanged(AiChatProviderOption? value)
+    {
+        if (value is null || string.Equals(value.Key, aiChatService.Provider, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        aiChatService.Provider = value.Key;
+        Messages.Clear();
+
+        OnPropertyChanged(nameof(IsAvailable));
+        OnPropertyChanged(nameof(UnavailableReason));
+        SendMessageCommand.NotifyCanExecuteChanged();
+    }
 
     [RelayCommand(CanExecute = nameof(CanSendMessage))]
     private async Task SendMessageAsync()
@@ -45,6 +70,6 @@ public partial class AiChatPageViewModel(IAiChatService aiChatService)
         }
     }
 
-    private bool CanSendMessage() => HasApiKey && !IsBusy;
+    private bool CanSendMessage() => IsAvailable && !IsBusy;
 }
 

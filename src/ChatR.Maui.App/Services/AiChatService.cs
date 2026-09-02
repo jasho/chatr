@@ -1,7 +1,8 @@
+using System.ClientModel;
+using System.Net.Http.Json;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
 using OpenAI;
-using System.ClientModel;
 using AiChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using AiChatRole = Microsoft.Extensions.AI.ChatRole;
 
@@ -9,45 +10,116 @@ namespace ChatR.Maui.App.Services;
 
 public class AiChatService : IAiChatService
 {
+    private const string OllamaServerProvider = "OllamaServer";
+    private const string OpenRouterProvider = "OpenRouter";
     private const string SystemPrompt = "You are a helpful assistant inside the ChatR mobile app.";
 
     private readonly AiChatSettings _settings;
-    private readonly Lazy<Microsoft.Extensions.AI.IChatClient?> _chatClient;
-    private readonly List<AiChatMessage> _history = [];
+    private readonly AppSettings _appSettings;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly Lazy<Microsoft.Extensions.AI.IChatClient?> _openRouterClient;
 
-    public bool HasApiKey => !string.IsNullOrWhiteSpace(_settings.ApiKey);
+    private readonly List<AiChatMessage> _openRouterHistory = [];
+    private readonly List<AiChatTurn> _serverHistory = [];
 
-    public AiChatService(IOptions<AiChatSettings> options)
+    private string _provider;
+
+    public IReadOnlyList<AiChatProviderOption> AvailableProviders { get; } =
+    [
+        new(OpenRouterProvider, "OpenRouter (cloud)"),
+        new(OllamaServerProvider, "Ollama (via ChatR Server)")
+    ];
+
+    public AiChatService(IOptions<AiChatSettings> aiChatOptions, IOptions<AppSettings> appOptions, IHttpClientFactory httpClientFactory)
     {
-        _settings = options.Value;
-        _chatClient = new Lazy<Microsoft.Extensions.AI.IChatClient?>(CreateChatClient);
+        _settings = aiChatOptions.Value;
+        _appSettings = appOptions.Value;
+        _httpClientFactory = httpClientFactory;
+        _openRouterClient = new Lazy<Microsoft.Extensions.AI.IChatClient?>(CreateOpenRouterClient);
+
+        var savedProvider = Preferences.Default.Get(PreferencesService.AiChatProviderPreferenceKey, string.Empty);
+        _provider = string.IsNullOrWhiteSpace(savedProvider) ? _settings.Provider : savedProvider;
+
         ResetConversation();
     }
 
-    public void ResetConversation()
+    public string Provider
     {
-        _history.Clear();
-        _history.Add(new AiChatMessage(AiChatRole.System, SystemPrompt));
+        get => _provider;
+        set
+        {
+            if (string.Equals(_provider, value, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            _provider = value;
+            Preferences.Default.Set(PreferencesService.AiChatProviderPreferenceKey, value);
+        }
     }
 
-    public async Task<string> SendMessageAsync(string userMessage, CancellationToken cancellationToken = default)
+    private bool UsesOllamaServer => string.Equals(_provider, OllamaServerProvider, StringComparison.OrdinalIgnoreCase);
+
+    public bool IsAvailable => UsesOllamaServer
+        ? !string.IsNullOrWhiteSpace(_appSettings.ServerUrl)
+        : !string.IsNullOrWhiteSpace(_settings.ApiKey);
+
+    public string UnavailableReason => UsesOllamaServer
+        ? "Set AppSettings:ServerUrl in appsettings.Development.json to point at your running ChatR.Server.App instance."
+        : "Create a free key at openrouter.ai/keys and set AiChatSettings:ApiKey in appsettings.Development.json, then restart the app.";
+
+    public void ResetConversation()
     {
-        var client = _chatClient.Value
-            ?? throw new InvalidOperationException(
-                "No OpenRouter API key configured. Set AiChatSettings:ApiKey in appsettings.Development.json.");
+        _openRouterHistory.Clear();
+        _openRouterHistory.Add(new AiChatMessage(AiChatRole.System, SystemPrompt));
 
-        _history.Add(new AiChatMessage(AiChatRole.User, userMessage));
+        _serverHistory.Clear();
+        _serverHistory.Add(new AiChatTurn("system", SystemPrompt));
+    }
 
-        var response = await client.GetResponseAsync(_history, cancellationToken: cancellationToken);
+    public Task<string> SendMessageAsync(string userMessage, CancellationToken cancellationToken = default)
+        => UsesOllamaServer
+            ? SendViaOllamaServerAsync(userMessage, cancellationToken)
+            : SendViaOpenRouterAsync(userMessage, cancellationToken);
+
+    private async Task<string> SendViaOpenRouterAsync(string userMessage, CancellationToken cancellationToken)
+    {
+        var client = _openRouterClient.Value
+            ?? throw new InvalidOperationException(UnavailableReason);
+
+        _openRouterHistory.Add(new AiChatMessage(AiChatRole.User, userMessage));
+
+        var response = await client.GetResponseAsync(_openRouterHistory, cancellationToken: cancellationToken);
         var replyText = response.Text;
 
-        _history.Add(new AiChatMessage(AiChatRole.Assistant, replyText));
+        _openRouterHistory.Add(new AiChatMessage(AiChatRole.Assistant, replyText));
         return replyText;
     }
 
-    private Microsoft.Extensions.AI.IChatClient? CreateChatClient()
+    private async Task<string> SendViaOllamaServerAsync(string userMessage, CancellationToken cancellationToken)
     {
-        if (!HasApiKey)
+        if (!IsAvailable)
+            throw new InvalidOperationException(UnavailableReason);
+
+        _serverHistory.Add(new AiChatTurn("user", userMessage));
+
+        var serverUrl = _appSettings.ServerUrl.TrimEnd('/');
+        var httpClient = _httpClientFactory.CreateClient();
+
+        var httpResponse = await httpClient.PostAsJsonAsync(
+            $"{serverUrl}{AiChatConstants.RoutePath}",
+            new AiChatRequest(_serverHistory),
+            cancellationToken);
+        httpResponse.EnsureSuccessStatusCode();
+
+        var payload = await httpResponse.Content.ReadFromJsonAsync<AiChatResponse>(cancellationToken)
+            ?? throw new InvalidOperationException("Empty response from the AI chat server endpoint.");
+
+        _serverHistory.Add(new AiChatTurn("assistant", payload.Reply));
+        return payload.Reply;
+    }
+
+    private Microsoft.Extensions.AI.IChatClient? CreateOpenRouterClient()
+    {
+        if (string.IsNullOrWhiteSpace(_settings.ApiKey))
             return null;
 
         var options = new OpenAIClientOptions { Endpoint = new Uri(_settings.Endpoint) };
@@ -55,4 +127,5 @@ public class AiChatService : IAiChatService
         return openAiClient.GetChatClient(_settings.Model).AsIChatClient();
     }
 }
+
 

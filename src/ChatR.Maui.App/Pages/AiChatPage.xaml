@@ -11,33 +11,41 @@
         <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="*,Auto">
+    <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- Shown when no OpenRouter API key is configured -->
-        <VerticalStackLayout
+        <Picker
             Grid.Row="0"
-            IsVisible="{Binding HasApiKey, Converter={StaticResource InvertedBoolConverter}}"
+            Margin="8,8,8,0"
+            Title="AI provider"
+            ItemsSource="{Binding Providers}"
+            ItemDisplayBinding="{Binding DisplayName}"
+            SelectedItem="{Binding SelectedProvider}" />
+
+        <!-- Shown when the selected AI provider isn't configured -->
+        <VerticalStackLayout
+            Grid.Row="1"
+            IsVisible="{Binding IsAvailable, Converter={StaticResource InvertedBoolConverter}}"
             Padding="24"
             Spacing="12"
             VerticalOptions="Center">
             <Label
-                Text="No OpenRouter API key configured"
+                Text="AI chat isn't configured yet"
                 FontSize="20"
                 FontAttributes="Bold"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center" />
             <Label
-                Text="Create a free key at openrouter.ai/keys and set AiChatSettings:ApiKey in Configuration/appsettings.Development.json, then restart the app."
+                Text="{Binding UnavailableReason}"
                 FontSize="13"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
                 TextColor="{AppThemeBinding Light=#666, Dark=#aaa}" />
         </VerticalStackLayout>
 
-        <!-- Chat UI, shown once an API key is available -->
+        <!-- Chat UI, shown once the selected provider is available -->
         <Grid
-            Grid.Row="0"
-            IsVisible="{Binding HasApiKey}"
+            Grid.Row="1"
+            IsVisible="{Binding IsAvailable}"
             RowDefinitions="*">
             <CollectionView
                 x:Name="MessagesCollectionView"
@@ -58,8 +66,8 @@
         </Grid>
 
         <Grid
-            Grid.Row="1"
-            IsVisible="{Binding HasApiKey}"
+            Grid.Row="2"
+            IsVisible="{Binding IsAvailable}"
             ColumnDefinitions="*,Auto"
             Padding="8"
             ColumnSpacing="8">

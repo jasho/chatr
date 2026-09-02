@@ -78,6 +78,7 @@ public static class MauiProgram
         services.Configure<AiChatSettings>(options =>
             configuration.GetSection("AiChatSettings").Bind(options));
         services.AddSingleton<IChatService, ChatService>();
+        services.AddHttpClient();
         services.AddSingleton<IAiChatService, AiChatService>();
     }
 
