@@ -18,9 +18,15 @@
         <Entry
             Placeholder="Enter your name"
             Text="{Binding UserName}" />
+        <Label Text="Theme" Margin="0,16,0,0" />
+        <Picker
+            ItemsSource="{Binding ThemeOptions}"
+            SelectedItem="{Binding SelectedTheme}" />
+
         <Button
             Text="Save"
-            Command="{Binding SaveUserNameCommand}" />
+            Command="{Binding SaveSettingsCommand}"
+            Margin="0,16,0,0" />
     </VerticalStackLayout>
 
 </ContentPageBase>
