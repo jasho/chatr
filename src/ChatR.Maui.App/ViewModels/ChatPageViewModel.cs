@@ -8,10 +8,10 @@ public partial class ChatPageViewModel : ViewModelBase
     private readonly IChatService _chatService;
 
     [ObservableProperty]
-    private ObservableCollection<ChatMessage> messages = [];
+    public partial ObservableCollection<ChatMessage> Messages { get; set; } = [];
 
     [ObservableProperty]
-    private string messageText = string.Empty;
+    public partial string MessageText { get; set; } = string.Empty;
 
     public ChatPageViewModel(IChatService chatService)
     {
@@ -38,7 +38,11 @@ public partial class ChatPageViewModel : ViewModelBase
             return;
 
         MessageText = string.Empty;
-        await _chatService.SendMessageAsync(DeviceInfo.Current.Name, text);
+        var savedUserName = Preferences.Default.Get(PreferencesService.UserNamePreferenceKey, string.Empty);
+        var sender = string.IsNullOrWhiteSpace(savedUserName)
+            ? DeviceInfo.Current.Name
+            : savedUserName.Trim();
+        await _chatService.SendMessageAsync(sender, text);
     }
 
     private void OnMessageReceived(ChatMessage message)

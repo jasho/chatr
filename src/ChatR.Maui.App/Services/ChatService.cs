@@ -7,6 +7,7 @@ namespace ChatR.Maui.App.Services;
 public class ChatService : IChatService
 {
     private readonly string _hubUrl;
+    private readonly SemaphoreSlim _connectionLock = new(1, 1);
     private HubConnection? _connection;
 
     public event Action<ChatMessage>? MessageReceived;
@@ -19,22 +20,40 @@ public class ChatService : IChatService
 
     public async Task ConnectAsync()
     {
-        if (_connection is { State: HubConnectionState.Connected })
-            return;
+        await _connectionLock.WaitAsync();
+        try
+        {
+            if (_connection is { State: HubConnectionState.Connected or HubConnectionState.Connecting or HubConnectionState.Reconnecting })
+                return;
 
-        _connection = new HubConnectionBuilder()
-            .WithUrl(_hubUrl, options =>
+            if (_connection is null)
             {
-                options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
-                options.SkipNegotiation = false;
-            })
-            .WithAutomaticReconnect()
-            .Build();
+                _connection = new HubConnectionBuilder()
+                    .WithUrl(_hubUrl, options =>
+                    {
+                        options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
+                        options.SkipNegotiation = false;
+                    })
+                    .WithAutomaticReconnect()
+                    .Build();
 
-        _connection.On<ChatMessage>(ChatHubConstants.ReceiveMessage, message =>
-            MessageReceived?.Invoke(message));
+                _connection.On<ChatMessage>(ChatHubConstants.ReceiveMessage, message =>
+                    MessageReceived?.Invoke(message));
+            }
 
-        await _connection.StartAsync();
+            try
+            {
+                await _connection.StartAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when user navigates away quickly and connection startup is interrupted.
+            }
+        }
+        finally
+        {
+            _connectionLock.Release();
+        }
     }
 
     public async Task SendMessageAsync(string sender, string text)
@@ -47,11 +66,30 @@ public class ChatService : IChatService
 
     public async Task DisconnectAsync()
     {
-        if (_connection is not null)
+        await _connectionLock.WaitAsync();
+        try
         {
-            await _connection.StopAsync();
+            if (_connection is null)
+                return;
+
+            if (_connection.State is HubConnectionState.Connected or HubConnectionState.Connecting or HubConnectionState.Reconnecting)
+            {
+                try
+                {
+                    await _connection.StopAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when rapid page changes cancel in-flight transport operations.
+                }
+            }
+
             await _connection.DisposeAsync();
             _connection = null;
+        }
+        finally
+        {
+            _connectionLock.Release();
         }
     }
 }

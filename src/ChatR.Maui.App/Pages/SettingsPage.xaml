@@ -14,6 +14,13 @@
             Text="Settings"
             HorizontalOptions="Center"
             FontSize="24" />
+        <Label Text="User name" />
+        <Entry
+            Placeholder="Enter your name"
+            Text="{Binding UserName}" />
+        <Button
+            Text="Save"
+            Command="{Binding SaveUserNameCommand}" />
     </VerticalStackLayout>
 
 </ContentPageBase>
