@@ -23,6 +23,11 @@
             ItemsSource="{Binding ThemeOptions}"
             SelectedItem="{Binding SelectedTheme}" />
 
+        <HorizontalStackLayout Spacing="12" Margin="0,16,0,0">
+            <Label Text="Enable AI in Chat" VerticalOptions="Center" />
+            <Switch IsToggled="{Binding IsAiChatEnabled}" />
+        </HorizontalStackLayout>
+
         <Button
             Text="Save"
             Command="{Binding SaveSettingsCommand}"

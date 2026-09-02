@@ -11,6 +11,7 @@ public partial class ChatPageViewModel : ViewModelBase
 
     private readonly IChatService _chatService;
     private readonly IAiChatService _aiChatService;
+    private readonly IAppFeaturesService _appFeaturesService;
 
     [ObservableProperty]
     public partial ObservableCollection<ChatMessage> Messages { get; set; } = [];
@@ -24,9 +25,10 @@ public partial class ChatPageViewModel : ViewModelBase
     [ObservableProperty]
     public partial AiChatProviderOption? SelectedAiProvider { get; set; }
 
-    public IReadOnlyList<AiChatProviderOption> AiProviders => _aiChatService.AvailableProviders;
+    [ObservableProperty]
+    public partial bool IsAiEnabled { get; set; }
 
-    public bool IsAiEnabled => FeatureFlags.EnableAiInChatPage;
+    public IReadOnlyList<AiChatProviderOption> AiProviders => _aiChatService.AvailableProviders;
 
     public string MessagePlaceholder => IsAiEnabled
         ? "Type a message... (mention @AI to ask the assistant)"
@@ -34,20 +36,21 @@ public partial class ChatPageViewModel : ViewModelBase
 
     public string ConnectionStatusText => IsConnected ? string.Empty : "Connecting to chat...";
 
-    public ChatPageViewModel(IChatService chatService, IAiChatService aiChatService)
+    public ChatPageViewModel(IChatService chatService, IAiChatService aiChatService, IAppFeaturesService appFeaturesService)
     {
         _chatService = chatService;
         _aiChatService = aiChatService;
+        _appFeaturesService = appFeaturesService;
         _chatService.MessageReceived += OnMessageReceived;
         _chatService.ConnectionStateChanged += OnConnectionStateChanged;
+        _appFeaturesService.AiChatEnabledChanged += OnAiChatEnabledChanged;
         IsConnected = chatService.IsConnected;
+        IsAiEnabled = _appFeaturesService.IsAiChatEnabled;
     }
 
     protected override async Task LoadDataAsync()
     {
-        if (IsAiEnabled)
-            SelectedAiProvider = AiProviders.FirstOrDefault(p => p.Key == _aiChatService.Provider) ?? AiProviders.FirstOrDefault();
-
+        SelectedAiProvider = AiProviders.FirstOrDefault(p => p.Key == _aiChatService.Provider) ?? AiProviders.FirstOrDefault();
         await _chatService.ConnectAsync();
     }
 
@@ -61,10 +64,20 @@ public partial class ChatPageViewModel : ViewModelBase
         _aiChatService.Provider = value.Key;
     }
 
+    partial void OnIsAiEnabledChanged(bool value)
+        => OnPropertyChanged(nameof(MessagePlaceholder));
+
+    private void OnAiChatEnabledChanged(bool isEnabled)
+    {
+        MainThread.BeginInvokeOnMainThread(() => IsAiEnabled = isEnabled);
+    }
+
     public override async Task OnDisappearingAsync()
     {
         _chatService.MessageReceived -= OnMessageReceived;
         _chatService.ConnectionStateChanged -= OnConnectionStateChanged;
+        _appFeaturesService.AiChatEnabledChanged -= OnAiChatEnabledChanged;
+        await _chatService.DisconnectAsync();
     }
 
     [RelayCommand(CanExecute = nameof(CanSendMessage))]

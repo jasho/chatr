@@ -4,6 +4,8 @@ namespace ChatR.Maui.App.ViewModels;
 
 public partial class SettingsPageViewModel : ViewModelBase
 {
+    private readonly IAppFeaturesService _appFeaturesService;
+
     [ObservableProperty]
     public partial string UserName { get; set; } = string.Empty;
 
@@ -12,8 +14,13 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     public partial string SelectedTheme { get; set; } = nameof(AppTheme.Light);
 
-    public SettingsPageViewModel()
+    [ObservableProperty]
+    public partial bool IsAiChatEnabled { get; set; }
+
+    public SettingsPageViewModel(IAppFeaturesService appFeaturesService)
     {
+        _appFeaturesService = appFeaturesService;
+
         var savedUserName = Preferences.Default.Get(PreferencesService.UserNamePreferenceKey, string.Empty);
         UserName = string.IsNullOrWhiteSpace(savedUserName)
             ? DeviceInfo.Current.Name
@@ -23,7 +30,13 @@ public partial class SettingsPageViewModel : ViewModelBase
         SelectedTheme = Enum.TryParse<AppTheme>(savedTheme, out var theme) && theme != AppTheme.Unspecified
             ? savedTheme
             : nameof(AppTheme.Light);
+
+        IsAiChatEnabled = _appFeaturesService.IsAiChatEnabled;
     }
+
+    // Applied immediately (not gated behind Save) so it can be flipped live for a demo.
+    partial void OnIsAiChatEnabledChanged(bool value)
+        => _appFeaturesService.IsAiChatEnabled = value;
 
     [RelayCommand]
     private void SaveSettings()

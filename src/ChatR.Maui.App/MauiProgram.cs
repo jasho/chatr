@@ -80,6 +80,7 @@ public static class MauiProgram
         services.AddSingleton<IChatService, ChatService>();
         services.AddHttpClient();
         services.AddSingleton<IAiChatService, AiChatService>();
+        services.AddSingleton<IAppFeaturesService, AppFeaturesService>();
     }
 
     private static void RegisterRoutes(MauiApp app)
