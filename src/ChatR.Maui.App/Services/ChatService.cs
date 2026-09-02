@@ -11,6 +11,9 @@ public class ChatService : IChatService
     private HubConnection? _connection;
 
     public event Action<ChatMessage>? MessageReceived;
+    public event Action<bool>? ConnectionStateChanged;
+
+    public bool IsConnected => _connection?.State == HubConnectionState.Connected;
 
     public ChatService(IOptions<AppSettings> options)
     {
@@ -39,11 +42,28 @@ public class ChatService : IChatService
 
                 _connection.On<ChatMessage>(ChatHubConstants.ReceiveMessage, message =>
                     MessageReceived?.Invoke(message));
+
+                _connection.Reconnecting += _ =>
+                {
+                    ConnectionStateChanged?.Invoke(false);
+                    return Task.CompletedTask;
+                };
+                _connection.Reconnected += _ =>
+                {
+                    ConnectionStateChanged?.Invoke(true);
+                    return Task.CompletedTask;
+                };
+                _connection.Closed += _ =>
+                {
+                    ConnectionStateChanged?.Invoke(false);
+                    return Task.CompletedTask;
+                };
             }
 
             try
             {
                 await _connection.StartAsync();
+                ConnectionStateChanged?.Invoke(true);
             }
             catch (OperationCanceledException)
             {
