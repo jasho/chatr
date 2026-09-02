@@ -65,7 +65,6 @@ public partial class ChatPageViewModel : ViewModelBase
     {
         _chatService.MessageReceived -= OnMessageReceived;
         _chatService.ConnectionStateChanged -= OnConnectionStateChanged;
-        await _chatService.DisconnectAsync();
     }
 
     [RelayCommand(CanExecute = nameof(CanSendMessage))]
