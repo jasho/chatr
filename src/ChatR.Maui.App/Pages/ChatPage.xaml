@@ -17,6 +17,7 @@
             Grid.Row="0"
             Margin="8,8,8,0"
             Title="AI provider for @AI"
+            IsVisible="{Binding IsAiEnabled}"
             ItemsSource="{Binding AiProviders}"
             ItemDisplayBinding="{Binding DisplayName}"
             SelectedItem="{Binding SelectedAiProvider}" />
@@ -55,7 +56,7 @@
             ColumnSpacing="8">
             <Entry
                 Grid.Column="0"
-                Placeholder="Type a message... (mention @AI to ask the assistant)"
+                Placeholder="{Binding MessagePlaceholder}"
                 IsEnabled="{Binding IsConnected}"
                 Text="{Binding MessageText}"
                 ReturnCommand="{Binding SendMessageCommand}" />

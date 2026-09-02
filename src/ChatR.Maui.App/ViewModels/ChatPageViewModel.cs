@@ -26,6 +26,12 @@ public partial class ChatPageViewModel : ViewModelBase
 
     public IReadOnlyList<AiChatProviderOption> AiProviders => _aiChatService.AvailableProviders;
 
+    public bool IsAiEnabled => FeatureFlags.EnableAiInChatPage;
+
+    public string MessagePlaceholder => IsAiEnabled
+        ? "Type a message... (mention @AI to ask the assistant)"
+        : "Type a message...";
+
     public string ConnectionStatusText => IsConnected ? string.Empty : "Connecting to chat...";
 
     public ChatPageViewModel(IChatService chatService, IAiChatService aiChatService)
@@ -39,7 +45,9 @@ public partial class ChatPageViewModel : ViewModelBase
 
     protected override async Task LoadDataAsync()
     {
-        SelectedAiProvider = AiProviders.FirstOrDefault(p => p.Key == _aiChatService.Provider) ?? AiProviders.FirstOrDefault();
+        if (IsAiEnabled)
+            SelectedAiProvider = AiProviders.FirstOrDefault(p => p.Key == _aiChatService.Provider) ?? AiProviders.FirstOrDefault();
+
         await _chatService.ConnectAsync();
     }
 
@@ -75,7 +83,7 @@ public partial class ChatPageViewModel : ViewModelBase
 
         // Snapshot the trailing context (including this message) before sending, since the
         // broadcast echo of this message may not have arrived by the time we ask the AI.
-        List<ChatMessage>? aiContext = text.Contains(AiMentionToken, StringComparison.OrdinalIgnoreCase)
+        List<ChatMessage>? aiContext = IsAiEnabled && text.Contains(AiMentionToken, StringComparison.OrdinalIgnoreCase)
             ? [.. Messages.TakeLast(AiContextMessageCount - 1), new ChatMessage(sender, text, DateTime.Now)]
             : null;
 
