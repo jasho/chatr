@@ -18,6 +18,9 @@ public partial class AiChatPageViewModel(IAiChatService aiChatService)
     [ObservableProperty]
     public partial AiChatProviderOption? SelectedProvider { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsAwaitingAiResponse { get; set; }
+
     public IReadOnlyList<AiChatProviderOption> Providers => aiChatService.AvailableProviders;
 
     public bool IsAvailable => aiChatService.IsAvailable;
@@ -36,6 +39,7 @@ public partial class AiChatPageViewModel(IAiChatService aiChatService)
 
         aiChatService.Provider = value.Key;
         Messages.Clear();
+        IsAwaitingAiResponse = false;
 
         OnPropertyChanged(nameof(IsAvailable));
         OnPropertyChanged(nameof(UnavailableReason));
@@ -53,6 +57,7 @@ public partial class AiChatPageViewModel(IAiChatService aiChatService)
         Messages.Add(new ChatMessage(UserSender, text, DateTime.Now));
 
         IsBusy = true;
+        IsAwaitingAiResponse = true;
         SendMessageCommand.NotifyCanExecuteChanged();
         try
         {
@@ -65,6 +70,7 @@ public partial class AiChatPageViewModel(IAiChatService aiChatService)
         }
         finally
         {
+            IsAwaitingAiResponse = false;
             IsBusy = false;
             SendMessageCommand.NotifyCanExecuteChanged();
         }
@@ -72,4 +78,3 @@ public partial class AiChatPageViewModel(IAiChatService aiChatService)
 
     private bool CanSendMessage() => IsAvailable && !IsBusy;
 }
-
