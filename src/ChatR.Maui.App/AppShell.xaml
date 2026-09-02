@@ -11,6 +11,11 @@
         Route="chat" />
 
     <ShellContent
+        Title="AI Chat"
+        ContentTemplate="{DataTemplate AiChatPage}"
+        Route="aichat" />
+
+    <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate MainPage}"
         Route="main" />

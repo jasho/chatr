@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPageBase
+    x:TypeArguments="AiChatPageViewModel"
+    x:Class="ChatR.Maui.App.Pages.AiChatPage"
+    xmlns="http://schemas.microsoft.com/dotnet/maui/global"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:ChatR.Maui.App.Infrastructure.Converters"
+    Title="AI Chat">
+
+    <ContentPage.Resources>
+        <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- Shown when no OpenRouter API key is configured -->
+        <VerticalStackLayout
+            Grid.Row="0"
+            IsVisible="{Binding HasApiKey, Converter={StaticResource InvertedBoolConverter}}"
+            Padding="24"
+            Spacing="12"
+            VerticalOptions="Center">
+            <Label
+                Text="No OpenRouter API key configured"
+                FontSize="20"
+                FontAttributes="Bold"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center" />
+            <Label
+                Text="Create a free key at openrouter.ai/keys and set AiChatSettings:ApiKey in Configuration/appsettings.Development.json, then restart the app."
+                FontSize="13"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                TextColor="{AppThemeBinding Light=#666, Dark=#aaa}" />
+        </VerticalStackLayout>
+
+        <!-- Chat UI, shown once an API key is available -->
+        <Grid
+            Grid.Row="0"
+            IsVisible="{Binding HasApiKey}"
+            RowDefinitions="*">
+            <CollectionView
+                x:Name="MessagesCollectionView"
+                ItemsSource="{Binding Messages}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="ChatMessage">
+                        <VerticalStackLayout Padding="12,6">
+                            <Label
+                                Text="{Binding Sender}"
+                                FontAttributes="Bold"
+                                FontSize="12"
+                                TextColor="{AppThemeBinding Light=#555, Dark=#aaa}" />
+                            <Label Text="{Binding Text}" FontSize="16" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+        <Grid
+            Grid.Row="1"
+            IsVisible="{Binding HasApiKey}"
+            ColumnDefinitions="*,Auto"
+            Padding="8"
+            ColumnSpacing="8">
+            <Entry
+                Grid.Column="0"
+                Placeholder="Ask the AI..."
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                Text="{Binding MessageText}"
+                ReturnCommand="{Binding SendMessageCommand}" />
+            <Button
+                Grid.Column="1"
+                Text="Send"
+                Command="{Binding SendMessageCommand}" />
+        </Grid>
+
+    </Grid>
+
+</ContentPageBase>
