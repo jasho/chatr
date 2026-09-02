@@ -56,7 +56,6 @@ public static class MauiProgram
 
     private static void ConfigureViews(IServiceCollection services)
     {
-        services.AddTransient<MainPage>();
         services.AddTransient<SettingsPage>();
         services.AddTransient<ChatPage>();
         services.AddTransient<AiChatPage>();
@@ -64,7 +63,6 @@ public static class MauiProgram
 
     private static void ConfigureViewModels(IServiceCollection services)
     {
-        services.AddTransient<MainPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ChatPageViewModel>();
         services.AddTransient<AiChatPageViewModel>();

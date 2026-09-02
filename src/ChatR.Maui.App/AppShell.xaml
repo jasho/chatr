@@ -16,11 +16,6 @@
         Route="aichat" />
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate MainPage}"
-        Route="main" />
-
-    <ShellContent
         Title="Settings"
         ContentTemplate="{DataTemplate SettingsPage}"
         Route="settings" />
