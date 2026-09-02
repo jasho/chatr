@@ -11,10 +11,18 @@
         <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <Picker
+            Grid.Row="0"
+            Margin="8,8,8,0"
+            Title="AI provider for @AI"
+            ItemsSource="{Binding AiProviders}"
+            ItemDisplayBinding="{Binding DisplayName}"
+            SelectedItem="{Binding SelectedAiProvider}" />
 
         <Label
-            Grid.Row="0"
+            Grid.Row="1"
             Text="{Binding ConnectionStatusText}"
             IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}"
             HorizontalOptions="Center"
@@ -24,7 +32,7 @@
 
         <CollectionView
             x:Name="MessagesCollectionView"
-            Grid.Row="1"
+            Grid.Row="2"
             ItemsSource="{Binding Messages}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="ChatMessage">
@@ -41,13 +49,13 @@
         </CollectionView>
 
         <Grid
-            Grid.Row="2"
+            Grid.Row="3"
             ColumnDefinitions="*,Auto"
             Padding="8"
             ColumnSpacing="8">
             <Entry
                 Grid.Column="0"
-                Placeholder="Type a message..."
+                Placeholder="Type a message... (mention @AI to ask the assistant)"
                 IsEnabled="{Binding IsConnected}"
                 Text="{Binding MessageText}"
                 ReturnCommand="{Binding SendMessageCommand}" />

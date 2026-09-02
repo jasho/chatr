@@ -117,6 +117,51 @@ public class AiChatService : IAiChatService
         return payload.Reply;
     }
 
+    private const string MentionSystemPrompt =
+        "You are \"AI\", a helpful participant in a group chat. You will be shown the most recent messages, " +
+        "each prefixed with its sender's name. Reply naturally and concisely to the conversation, addressing " +
+        "whoever mentioned you (@AI) most recently. Do not prefix your own reply with a sender name.";
+
+    public Task<string> GetContextualReplyAsync(IReadOnlyList<ChatR.Common.ChatMessage> recentMessages, CancellationToken cancellationToken = default)
+        => UsesOllamaServer
+            ? GetContextualReplyViaOllamaServerAsync(recentMessages, cancellationToken)
+            : GetContextualReplyViaOpenRouterAsync(recentMessages, cancellationToken);
+
+    private async Task<string> GetContextualReplyViaOpenRouterAsync(IReadOnlyList<ChatR.Common.ChatMessage> recentMessages, CancellationToken cancellationToken)
+    {
+        var client = _openRouterClient.Value
+            ?? throw new InvalidOperationException(UnavailableReason);
+
+        var messages = new List<AiChatMessage> { new(AiChatRole.System, MentionSystemPrompt) };
+        messages.AddRange(recentMessages.Select(m => new AiChatMessage(AiChatRole.User, $"{m.Sender}: {m.Text}")));
+
+        var response = await client.GetResponseAsync(messages, cancellationToken: cancellationToken);
+        return response.Text;
+    }
+
+    private async Task<string> GetContextualReplyViaOllamaServerAsync(IReadOnlyList<ChatR.Common.ChatMessage> recentMessages, CancellationToken cancellationToken)
+    {
+        if (!IsAvailable)
+            throw new InvalidOperationException(UnavailableReason);
+
+        var turns = new List<AiChatTurn> { new("system", MentionSystemPrompt) };
+        turns.AddRange(recentMessages.Select(m => new AiChatTurn("user", $"{m.Sender}: {m.Text}")));
+
+        var serverUrl = _appSettings.ServerUrl.TrimEnd('/');
+        var httpClient = _httpClientFactory.CreateClient();
+
+        var httpResponse = await httpClient.PostAsJsonAsync(
+            $"{serverUrl}{AiChatConstants.RoutePath}",
+            new AiChatRequest(turns),
+            cancellationToken);
+        httpResponse.EnsureSuccessStatusCode();
+
+        var payload = await httpResponse.Content.ReadFromJsonAsync<AiChatResponse>(cancellationToken)
+            ?? throw new InvalidOperationException("Empty response from the AI chat server endpoint.");
+
+        return payload.Reply;
+    }
+
     private Microsoft.Extensions.AI.IChatClient? CreateOpenRouterClient()
     {
         if (string.IsNullOrWhiteSpace(_settings.ApiKey))
